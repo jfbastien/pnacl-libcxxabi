@@ -421,7 +421,14 @@ void
 set_registers(_Unwind_Exception* unwind_exception, _Unwind_Context* context,
               const scan_results& results)
 {
-#if __arm__
+    // @LOCALMOD-START
+#if defined(__pnacl__)
+    _Unwind_PNaClSetResult0(
+        context, reinterpret_cast<uintptr_t>(unwind_exception));
+    _Unwind_PNaClSetResult1(
+        context, static_cast<uintptr_t>(results.ttypeIndex));
+#elif __arm__
+    // @LOCALMOD-END
     _Unwind_SetGR(context, 0, reinterpret_cast<uintptr_t>(unwind_exception));
     _Unwind_SetGR(context, 1, static_cast<uintptr_t>(results.ttypeIndex));
 #else
