@@ -4604,6 +4604,16 @@ __cxa_demangle(const char* mangled_name, char* buf, size_t* n, int* status)
             *status = invalid_args;
         return nullptr;
     }
+    // @LOCALMOD-START The demangler is *huge* and only used in
+    // default_terminate_handler with a fallback to printing mangled
+    // names instead. pexe size matters a lot, so PNaCl only prints out
+    // mangled names when exceptions are uncaught.
+#ifdef __pnacl__
+    if (status)
+        *status = memory_alloc_failure;
+    return nullptr;
+#else
+    // @LOCALMOD-END
     size_t internal_size = buf != nullptr ? *n : 0;
     arena<bs> a;
     struct Db
@@ -4681,6 +4691,9 @@ __cxa_demangle(const char* mangled_name, char* buf, size_t* n, int* status)
     if (status)
         *status = internal_status;
     return buf;
+    // @LOCALMOD-START
+#endif // __pnacl__
+    // @LOCALMOD-END
 }
 
 }  // __cxxabiv1
